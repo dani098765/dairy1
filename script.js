@@ -1,17 +1,16 @@
-// Mock data from the Excel file (processed datasets)
+// Mock data for requirements
 const requirements = [
   { weight: 400, energy: 7.16, protein: 318, calcium: 16, phosphorus: 11 },
   { weight: 450, energy: 7.46, protein: 341, calcium: 18, phosphorus: 13 },
   { weight: 500, energy: 7.96, protein: 362, calcium: 20, phosphorus: 14 },
-  // Add more weight rows as needed
 ];
 
+// Mock data for ingredients
 const ingredients = [
   { name: "Barley", dm: 91.4, cp: 8.92, fat: 2.68, energy: 2.79, calcium: 0.06, phosphorus: 0.39 },
   { name: "Soybean", dm: 94.4, cp: 20.35, fat: 3.17, energy: 2.72, calcium: 0.2, phosphorus: 0.4 },
   { name: "Maize", dm: 89.0, cp: 9.8, fat: 4.07, energy: 2.91, calcium: 0.04, phosphorus: 0.3 },
   { name: "Wheat", dm: 89.36, cp: 9.25, fat: 4.8, energy: 2.94, calcium: 0.06, phosphorus: 0.28 },
-  // Add more ingredients as needed
 ];
 
 // Form submission logic
@@ -27,10 +26,13 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
     return;
   }
 
-  // Determine nutrient requirements based on weight
-  const requirement = requirements.find(r => r.weight === weight);
+  // Find the closest matching weight requirement
+  const requirement = requirements.reduce((prev, curr) => 
+    Math.abs(curr.weight - weight) < Math.abs(prev.weight - weight) ? curr : prev
+  );
+
   if (!requirement) {
-    alert("No requirements found for this weight.");
+    alert("No matching requirements found.");
     return;
   }
 
@@ -45,15 +47,15 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
   let totalCost = 0;
 
   ingredients.forEach(feed => {
-    // Ensure valid nutritional values
+    // Ensure feed data is valid
     if (!feed.cp || !feed.energy) {
-      console.warn(`Skipping feed ${feed.name} due to missing values.`);
+      console.warn(`Skipping feed ${feed.name}: Missing protein or energy values.`);
       return;
     }
 
-    // Inclusion rate based on limiting nutrient (e.g., protein)
+    // Inclusion rate based on protein as the limiting factor
     const inclusionRate = totalProtein / feed.cp;
-    const costPerKg = 10; // Placeholder cost, replace with actual prices if available
+    const costPerKg = 10; // Placeholder cost, replace with actual feed prices
     const cost = inclusionRate * costPerKg;
 
     feedPlan.push({ name: feed.name, amount: inclusionRate.toFixed(2), cost: cost.toFixed(2) });
