@@ -13,6 +13,13 @@ const ingredients = [
   { name: "Wheat", dm: 89.36, cp: 9.25, fat: 4.8, energy: 2.94, calcium: 0.06, phosphorus: 0.28 },
 ];
 
+// Conversion factors for time frames
+const timeFrames = {
+  daily: 1,
+  monthly: 30,
+  yearly: 365,
+};
+
 // Form submission logic
 document.getElementById("feedForm").addEventListener("submit", function (e) {
   e.preventDefault();
@@ -20,6 +27,7 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
   const weight = parseFloat(document.getElementById("weight").value);
   const milkYield = parseFloat(document.getElementById("milkYield").value);
   const fatPercentage = parseFloat(document.getElementById("fatPercentage").value);
+  const selectedTimeFrame = document.getElementById("timeFrame").value;
 
   if (isNaN(weight) || isNaN(milkYield) || isNaN(fatPercentage)) {
     alert("Please enter valid inputs for all fields.");
@@ -42,6 +50,9 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
   const totalCalcium = requirement.calcium;
   const totalPhosphorus = requirement.phosphorus;
 
+  // Adjust for time frame
+  const multiplier = timeFrames[selectedTimeFrame];
+
   // Optimize feed formulation
   const feedPlan = [];
   let totalCost = 0;
@@ -54,7 +65,7 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
     }
 
     // Inclusion rate based on protein as the limiting factor
-    const inclusionRate = totalProtein / feed.cp;
+    const inclusionRate = (totalProtein / feed.cp) * multiplier;
     const costPerKg = 10; // Placeholder cost, replace with actual feed prices
     const cost = inclusionRate * costPerKg;
 
@@ -69,7 +80,7 @@ document.getElementById("feedForm").addEventListener("submit", function (e) {
   }
 
   document.getElementById("results").classList.remove("hidden");
-  document.getElementById("totalCost").innerText = `Total Cost: $${totalCost.toFixed(2)}`;
+  document.getElementById("totalCost").innerText = `Total Cost: $${totalCost.toFixed(2)} (${selectedTimeFrame})`;
 
   const feedPlanList = document.getElementById("feedPlan");
   feedPlanList.innerHTML = "";
