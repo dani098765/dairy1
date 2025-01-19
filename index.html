@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feed Formulation Tool</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Dairy Feed Formulation</h1>
+    <form id="feedForm">
+      <h3>Animal Details</h3>
+      <label for="weight">Animal Weight (kg):</label>
+      <input type="number" id="weight" name="weight" required>
+
+      <label for="milkYield">Milk Yield (liters/day):</label>
+      <input type="number" id="milkYield" name="milkYield" required>
+
+      <label for="fatPercentage">Fat Percentage (%):</label>
+      <input type="number" id="fatPercentage" name="fatPercentage" step="0.1" required>
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div id="results" class="hidden">
+      <h2>Optimal Feed Formulation</h2>
+      <ul id="feedPlan"></ul>
+      <h3>Total Cost</h3>
+      <p id="totalCost"></p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
