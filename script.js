@@ -1,89 +1,131 @@
-// Define ingredients with nutritional information (this can be dynamic or fetched from a server)
-const ingredients = [
-    { name: "Corn", protein: 9, fat: 4, carbohydrates: 73, price: 0.2 },
-    { name: "Soybean Meal", protein: 44, fat: 1, carbohydrates: 34, price: 0.5 },
-    { name: "Wheat Bran", protein: 16, fat: 2, carbohydrates: 65, price: 0.3 },
-    { name: "Alfalfa", protein: 18, fat: 1, carbohydrates: 40, price: 0.4 }
+// Store ingredients data and formulations in localStorage (simulate database)
+let ingredients = [
+    { id: 1, name: "Corn", protein: 9, fat: 4, fiber: 2, cost: 0.2 },
+    { id: 2, name: "Soybean Meal", protein: 44, fat: 1, fiber: 5, cost: 0.5 },
+    { id: 3, name: "Wheat Bran", protein: 16, fat: 2, fiber: 12, cost: 0.3 },
+    { id: 4, name: "Alfalfa", protein: 18, fat: 1, fiber: 30, cost: 0.4 }
 ];
 
-// Load ingredients into the select dropdown
-window.onload = () => {
-    const selectElement = document.getElementById("ingredient-select");
-    
-    // Populate the dropdown with ingredient options
-    ingredients.forEach(ingredient => {
-        const option = document.createElement("option");
-        option.value = ingredient.name;
-        option.textContent = ingredient.name;
-        selectElement.appendChild(option);
-    });
+let selectedIngredients = []; // Selected ingredients for formulation
+let currentUser = null; // Simulate logged-in user
 
-    // Add event listener to button
-    document.getElementById("add-ingredient-btn").addEventListener("click", addIngredient);
-    document.getElementById("calculate-btn").addEventListener("click", calculateFeed);
-};
+// Simulate login and register
+function register() {
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
 
-let selectedIngredients = [];  // Store selected ingredients
+    // Store registration data in localStorage
+    localStorage.setItem('user', JSON.stringify({ username, password }));
+    alert('Registered successfully!');
+    showLogin();
+}
 
-// Add ingredient to the list
-function addIngredient() {
-    const ingredientName = document.getElementById("ingredient-select").value;
-    const quantity = parseFloat(document.getElementById("quantity").value);
-    
-    // Ensure that the ingredient and quantity are valid
-    if (!ingredientName || quantity <= 0) {
-        alert("Please select a valid ingredient and quantity.");
-        return;
+function login() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.username === username && user.password === password) {
+        currentUser = user;
+        alert('Logged in successfully!');
+        showFeedFormulation();
+    } else {
+        alert('Invalid credentials');
     }
+}
 
-    // Find the selected ingredient's data
-    const ingredient = ingredients.find(ing => ing.name === ingredientName);
-    const ingredientData = { ...ingredient, quantity };
+// Show the feed formulation section
+function showFeedFormulation() {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('register-section').style.display = 'none';
+    document.getElementById('feed-formulation').style.display = 'block';
+    loadIngredients();
+}
 
-    selectedIngredients.push(ingredientData);
+// Show login section
+function showLogin() {
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('register-section').style.display = 'none';
+    document.getElementById('feed-formulation').style.display = 'none';
+}
+
+// Load ingredient list into the dropdown
+function loadIngredients() {
+    const select = document.getElementById('ingredient-select');
+    ingredients.forEach(ingredient => {
+        const option = document.createElement('option');
+        option.value = ingredient.id;
+        option.textContent = ingredient.name;
+        select.appendChild(option);
+    });
+}
+
+// Add selected ingredient to the formulation list
+function addIngredient() {
+    const ingredientId = parseInt(document.getElementById('ingredient-select').value);
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    
+    const ingredient = ingredients.find(ing => ing.id === ingredientId);
+    selectedIngredients.push({ ...ingredient, quantity });
     displaySelectedIngredients();
 }
 
-// Display selected ingredients in the list
+// Display selected ingredients
 function displaySelectedIngredients() {
-    const selectedIngredientsList = document.getElementById("selected-ingredients-list");
-    selectedIngredientsList.innerHTML = '';  // Clear existing list
+    const list = document.getElementById('ingredients-list');
+    list.innerHTML = ''; // Clear current list
 
     selectedIngredients.forEach(ingredient => {
-        const listItem = document.createElement("li");
-        listItem.textContent = `${ingredient.name} - ${ingredient.quantity} kg`;
-        selectedIngredientsList.appendChild(listItem);
+        const item = document.createElement('div');
+        item.textContent = `${ingredient.name} - ${ingredient.quantity} kg`;
+        list.appendChild(item);
     });
 }
 
-// Calculate the feed's nutritional values
-function calculateFeed() {
-    if (selectedIngredients.length === 0) {
-        alert("Please add at least one ingredient.");
-        return;
-    }
+// Function to calculate the optimal feed formulation using Linear Programming
+function calculateFormulation() {
+    // Example target protein value
+    const targetProtein = parseFloat(prompt("Enter the target protein content"));
 
-    let totalProtein = 0;
-    let totalFat = 0;
-    let totalCarbs = 0;
-    let totalPrice = 0;
+    // Define linear programming model
+    const model = {
+        name: "Feed Formulation",
+        objectives: {
+            minimize: selectedIngredients.reduce((acc, ingredient, index) => {
+                acc[`ingredient_${index}`] = ingredient.cost;
+                return acc;
+            }, {})
+        },
+        constraints: {
+            protein: {
+                '>=': targetProtein
+            }
+        },
+        variables: selectedIngredients.reduce((acc, ingredient, index) => {
+            acc[`ingredient_${index}`] = {
+                cost: ingredient.cost,
+                protein: ingredient.protein,
+                fat: ingredient.fat,
+                fiber: ingredient.fiber
+            };
+            return acc;
+        }, {})
+    };
 
-    // Sum the values based on selected ingredients and quantities
-    selectedIngredients.forEach(ingredient => {
-        totalProtein += ingredient.protein * ingredient.quantity / 100;
-        totalFat += ingredient.fat * ingredient.quantity / 100;
-        totalCarbs += ingredient.carbohydrates * ingredient.quantity / 100;
-        totalPrice += ingredient.price * ingredient.quantity;
+    const solver = new glpk.LP();
+    solver.model(model);
+    solver.solve();
+
+    // Display result (minimized cost and ingredient quantities)
+    const result = solver.getSolution();
+    displayOptimizationResult(result);
+}
+
+// Display optimization result
+function displayOptimizationResult(result) {
+    let resultText = 'Optimized Feed Formulation:\n';
+    selectedIngredients.forEach((ingredient, index) => {
+        resultText += `${ingredient.name}: ${result[`ingredient_${index}`]} kg\n`;
     });
-
-    // Display result
-    const result = document.getElementById("result");
-    result.innerHTML = `
-        <h3>Feed Nutritional Summary:</h3>
-        <p>Protein: ${totalProtein.toFixed(2)} g</p>
-        <p>Fat: ${totalFat.toFixed(2)} g</p>
-        <p>Carbohydrates: ${totalCarbs.toFixed(2)} g</p>
-        <p>Total Cost: $${totalPrice.toFixed(2)}</p>
-    `;
-    result.classList.remove("hidden");
+    document.getElementById('result').textContent = resultText;
 }
