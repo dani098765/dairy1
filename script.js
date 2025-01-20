@@ -9,12 +9,18 @@ const ingredients = [
 // Load ingredients into the select dropdown
 window.onload = () => {
     const selectElement = document.getElementById("ingredient-select");
+    
+    // Populate the dropdown with ingredient options
     ingredients.forEach(ingredient => {
         const option = document.createElement("option");
         option.value = ingredient.name;
         option.textContent = ingredient.name;
         selectElement.appendChild(option);
     });
+
+    // Add event listener to button
+    document.getElementById("add-ingredient-btn").addEventListener("click", addIngredient);
+    document.getElementById("calculate-btn").addEventListener("click", calculateFeed);
 };
 
 let selectedIngredients = [];  // Store selected ingredients
@@ -24,18 +30,24 @@ function addIngredient() {
     const ingredientName = document.getElementById("ingredient-select").value;
     const quantity = parseFloat(document.getElementById("quantity").value);
     
+    // Ensure that the ingredient and quantity are valid
+    if (!ingredientName || quantity <= 0) {
+        alert("Please select a valid ingredient and quantity.");
+        return;
+    }
+
+    // Find the selected ingredient's data
     const ingredient = ingredients.find(ing => ing.name === ingredientName);
     const ingredientData = { ...ingredient, quantity };
 
     selectedIngredients.push(ingredientData);
-
     displaySelectedIngredients();
 }
 
 // Display selected ingredients in the list
 function displaySelectedIngredients() {
     const selectedIngredientsList = document.getElementById("selected-ingredients-list");
-    selectedIngredientsList.innerHTML = '';
+    selectedIngredientsList.innerHTML = '';  // Clear existing list
 
     selectedIngredients.forEach(ingredient => {
         const listItem = document.createElement("li");
@@ -46,11 +58,17 @@ function displaySelectedIngredients() {
 
 // Calculate the feed's nutritional values
 function calculateFeed() {
+    if (selectedIngredients.length === 0) {
+        alert("Please add at least one ingredient.");
+        return;
+    }
+
     let totalProtein = 0;
     let totalFat = 0;
     let totalCarbs = 0;
     let totalPrice = 0;
 
+    // Sum the values based on selected ingredients and quantities
     selectedIngredients.forEach(ingredient => {
         totalProtein += ingredient.protein * ingredient.quantity / 100;
         totalFat += ingredient.fat * ingredient.quantity / 100;
