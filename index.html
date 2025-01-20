@@ -1,43 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feed Formulation Tool</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Formulation Tool</title>
+    <link rel="stylesheet" href="assets/styles/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Dairy Feed Formulation</h1>
-    <form id="feedForm">
-      <h3>Animal Details</h3>
-      <label for="weight">Animal Weight (kg):</label>
-      <input type="number" id="weight" name="weight" required>
+    <div class="container">
+        <header>
+            <h1>Feed Formulation Tool</h1>
+            <p>Create the perfect feed for your animals with ease!</p>
+        </header>
+        
+        <section id="feed-formulation">
+            <div class="form-group">
+                <label for="ingredient-select">Select Ingredient:</label>
+                <select id="ingredient-select">
+                    <!-- Ingredients will be loaded dynamically -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity">Quantity (kg):</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
 
-      <label for="milkYield">Milk Yield (liters/day):</label>
-      <input type="number" id="milkYield" name="milkYield" required>
+            <button onclick="addIngredient()">Add Ingredient</button>
 
-      <label for="fatPercentage">Fat Percentage (%):</label>
-      <input type="number" id="fatPercentage" name="fatPercentage" step="0.1" required>
+            <div id="selected-ingredients-list"></div>
 
-      <h3>Time Frame</h3>
-      <label for="timeFrame">Select Time Frame:</label>
-      <select id="timeFrame">
-        <option value="daily" selected>Daily</option>
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
+            <button onclick="calculateFeed()">Calculate Feed</button>
 
-      <button type="submit">Calculate</button>
-    </form>
-
-    <div id="results" class="hidden">
-      <h2>Optimal Feed Formulation</h2>
-      <ul id="feedPlan"></ul>
-      <h3>Total Cost</h3>
-      <p id="totalCost"></p>
+            <div id="result" class="hidden"></div>
+        </section>
     </div>
-  </div>
-  <script src="script.js"></script>
+
+    <script src="js/app.js"></script>
 </body>
 </html>
